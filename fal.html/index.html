@@ -1,0 +1,1633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Faloria — Mystic Readings</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Crimson+Pro:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet" />
+
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --gold: #C9A96E;
+    --gold-light: #E8C98A;
+    --gold-dark: #8B6914;
+    --deep-purple: #080512;
+    --mid-purple: #110927;
+    --surface: #0F0C1E;
+    --surface2: #1A1030;
+    --surface3: #221643;
+    --text-cream: #F2E8D8;
+    --text-muted: #9B8FAF;
+    --border: rgba(201,169,110,0.18);
+    --border-hover: rgba(201,169,110,0.5);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--deep-purple);
+    color: var(--text-cream);
+    font-family: 'Crimson Pro', Georgia, serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  #stars-canvas {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page-wrap {
+    position: relative;
+    z-index: 1;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 28px 80px;
+  }
+
+  header {
+    text-align: center;
+    padding: 56px 0 30px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 34px;
+  }
+
+  .logo-wrap {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 24px;
+    animation: float 4s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50%       { transform: translateY(-9px); }
+  }
+
+  .site-name {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 34px;
+    font-weight: 700;
+    color: var(--gold);
+    letter-spacing: 0.12em;
+    margin-bottom: 8px;
+  }
+
+  .site-tagline {
+    font-size: 16px;
+    color: var(--text-muted);
+    font-style: italic;
+    letter-spacing: 0.04em;
+  }
+
+  .nav {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 28px;
+  }
+
+  .nav a {
+    color: var(--text-muted);
+    text-decoration: none;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 9px 15px;
+    font-size: 14px;
+    font-style: italic;
+    transition: all 0.25s;
+    background: rgba(15,12,30,0.55);
+  }
+
+  .nav a:hover,
+  .nav a.active {
+    color: var(--gold);
+    border-color: var(--border-hover);
+    background: rgba(201,169,110,0.06);
+  }
+
+  .section {
+    display: none;
+    animation: fadeUp 0.55s ease;
+  }
+
+  .section.active { display: block; }
+
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+
+  .divider span {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 11px;
+    color: var(--gold);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(201,169,110,0.35));
+  }
+
+  .divider::after {
+    background: linear-gradient(to left, transparent, rgba(201,169,110,0.35));
+  }
+
+  .hero-card {
+    background: radial-gradient(circle at top, rgba(201,169,110,0.08), transparent 42%),
+                linear-gradient(135deg, rgba(26,16,48,0.95), rgba(15,12,30,0.95));
+    border: 1px solid rgba(201,169,110,0.22);
+    border-radius: 24px;
+    padding: 42px 34px;
+    text-align: center;
+    margin-bottom: 32px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .hero-card::before {
+    content: '✦';
+    position: absolute;
+    top: 18px;
+    right: 24px;
+    color: rgba(201,169,110,0.22);
+    font-size: 28px;
+  }
+
+  .hero-eyebrow {
+    font-family: 'Cinzel Decorative', serif;
+    color: var(--gold);
+    letter-spacing: 0.18em;
+    font-size: 11px;
+    text-transform: uppercase;
+    margin-bottom: 18px;
+  }
+
+  .hero-title {
+    font-family: 'Cinzel Decorative', serif;
+    color: var(--gold-light);
+    font-size: 30px;
+    line-height: 1.35;
+    letter-spacing: 0.04em;
+    margin-bottom: 18px;
+  }
+
+  .hero-text {
+    color: var(--text-muted);
+    font-size: 18px;
+    line-height: 1.8;
+    font-style: italic;
+    max-width: 680px;
+    margin: 0 auto 26px;
+  }
+
+  .hero-actions {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .mini-btn {
+    padding: 12px 18px;
+    border-radius: 999px;
+    border: 1px solid rgba(201,169,110,0.25);
+    background: transparent;
+    color: var(--text-cream);
+    font-family: 'Crimson Pro', serif;
+    font-size: 16px;
+    font-style: italic;
+    cursor: pointer;
+    transition: all 0.25s;
+  }
+
+  .mini-btn:hover {
+    color: var(--gold);
+    border-color: rgba(201,169,110,0.5);
+    background: rgba(201,169,110,0.06);
+  }
+
+  .grid {
+    display: grid;
+    gap: 18px;
+  }
+
+  .grid-2 { grid-template-columns: repeat(2, 1fr); }
+  .grid-3 { grid-template-columns: repeat(3, 1fr); }
+
+  .info-card,
+  .reader-card,
+  .support-card,
+  .auth-card,
+  .service-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 24px;
+  }
+
+  .info-icon,
+  .reader-avatar {
+    font-size: 32px;
+    margin-bottom: 12px;
+    display: block;
+  }
+
+  .info-title,
+  .reader-name,
+  .service-title {
+    font-family: 'Cinzel Decorative', serif;
+    color: var(--gold);
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    margin-bottom: 10px;
+  }
+
+  .info-text,
+  .reader-bio,
+  .service-text,
+  .support-text {
+    font-size: 16px;
+    line-height: 1.65;
+    color: var(--text-muted);
+    font-style: italic;
+  }
+
+  .ornament {
+    text-align: center;
+    color: rgba(201,169,110,0.25);
+    letter-spacing: 0.5em;
+    font-size: 18px;
+    margin: 36px 0;
+  }
+
+  .field { margin-bottom: 22px; }
+
+  .field label {
+    display: block;
+    font-size: 14px;
+    color: var(--gold);
+    font-style: italic;
+    margin-bottom: 9px;
+    letter-spacing: 0.02em;
+  }
+
+  .field textarea,
+  .field input,
+  .field select {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    padding: 14px 18px;
+    color: var(--text-cream);
+    font-family: 'Crimson Pro', serif;
+    font-size: 17px;
+    resize: none;
+    outline: none;
+    transition: border-color 0.25s;
+  }
+
+  .field textarea::placeholder,
+  .field input::placeholder { color: var(--text-muted); }
+
+  .field textarea:focus,
+  .field input:focus,
+  .field select:focus { border-color: rgba(201,169,110,0.55); }
+
+  .dob-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+  .cta-btn {
+    width: 100%;
+    padding: 20px;
+    background: linear-gradient(135deg, #6B3D0F 0%, #C9A96E 48%, #7B500F 100%);
+    border: none;
+    border-radius: 13px;
+    color: #1A0C00;
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: transform 0.25s, box-shadow 0.25s, opacity 0.25s;
+    margin-top: 6px;
+  }
+
+  .cta-btn:hover { transform: translateY(-3px); box-shadow: 0 10px 36px rgba(201,169,110,0.28); }
+  .cta-btn:active { transform: translateY(0); }
+  .cta-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  .error-msg,
+  .success-msg {
+    display: none;
+    border-radius: 11px;
+    padding: 14px 18px;
+    font-size: 16px;
+    font-style: italic;
+    margin-top: 16px;
+  }
+
+  .error-msg {
+    background: rgba(139,58,107,0.12);
+    border: 1px solid rgba(139,58,107,0.4);
+    color: #E8A0C8;
+  }
+
+  .success-msg {
+    background: rgba(201,169,110,0.08);
+    border: 1px solid rgba(201,169,110,0.28);
+    color: var(--gold-light);
+  }
+
+  .error-msg.visible,
+  .success-msg.visible { display: block; }
+
+  .upload-zone {
+    border: 1.5px dashed rgba(201,169,110,0.3);
+    border-radius: 18px;
+    padding: 44px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.3s, background 0.3s;
+    background: rgba(201,169,110,0.025);
+    margin-bottom: 32px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .upload-zone:hover { border-color: var(--border-hover); background: rgba(201,169,110,0.06); }
+  .upload-zone.dragover { border-color: var(--gold); background: rgba(201,169,110,0.09); }
+  .upload-zone.has-image { padding: 0; border-color: rgba(201,169,110,0.4); }
+
+  .upload-icon-svg { width: 56px; height: 56px; margin: 0 auto 14px; display: block; opacity: 0.8; }
+  .upload-main-text { font-size: 18px; color: var(--text-cream); margin-bottom: 6px; }
+  .upload-sub-text { font-size: 14px; color: var(--text-muted); font-style: italic; }
+
+  #fileInput { display: none; }
+
+  #previewImg {
+    width: 100%;
+    max-height: 340px;
+    object-fit: contain;
+    border-radius: 16px;
+    display: none;
+  }
+
+  #loadingState { display: none; text-align: center; padding: 72px 0; }
+  #loadingState.visible { display: block; }
+
+  .loading-cup { width: 72px; height: 72px; margin: 0 auto 26px; animation: float 2.2s ease-in-out infinite; }
+
+  .loading-label { font-size: 20px; color: var(--gold); font-style: italic; letter-spacing: 0.04em; }
+
+  .loading-dots::after {
+    content: '';
+    animation: dots 1.6s steps(4, end) infinite;
+  }
+
+  @keyframes dots {
+    0%  { content: ''; }
+    25% { content: '.'; }
+    50% { content: '..'; }
+    75% { content: '...'; }
+  }
+
+  .loading-hint { margin-top: 10px; font-size: 14px; color: var(--text-muted); font-style: italic; }
+
+  #resultCard {
+    display: none;
+    margin-top: 8px;
+    background: var(--surface);
+    border: 1px solid rgba(201,169,110,0.25);
+    border-radius: 20px;
+    overflow: hidden;
+    animation: fadeUp 0.6s ease;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  #resultCard.visible { display: block; }
+
+  .result-header {
+    background: linear-gradient(135deg, var(--surface2), #241550);
+    padding: 22px 26px;
+    border-bottom: 1px solid rgba(201,169,110,0.18);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .result-orb {
+    width: 46px; height: 46px;
+    border-radius: 50%;
+    background: rgba(201,169,110,0.12);
+    border: 1px solid rgba(201,169,110,0.35);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; flex-shrink: 0;
+  }
+
+  .result-meta-title { font-family: 'Cinzel Decorative', serif; font-size: 15px; color: var(--gold); letter-spacing: 0.06em; }
+  .result-meta-date  { font-size: 13px; color: var(--text-muted); margin-top: 3px; font-style: italic; }
+
+  .result-body { padding: 28px 28px 10px; }
+
+  .result-section { margin-bottom: 26px; }
+
+  .result-section-label {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--gold);
+    opacity: 0.75;
+    margin-bottom: 10px;
+  }
+
+  .result-section-text { font-size: 18px; line-height: 1.8; color: var(--text-cream); font-style: italic; }
+
+  .result-hr {
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(201,169,110,0.22), transparent);
+    margin: 4px 0 24px;
+    border: none;
+  }
+
+  .result-message-box {
+    background: var(--surface2);
+    border: 1px solid rgba(201,169,110,0.22);
+    border-radius: 14px;
+    padding: 22px;
+    margin: 8px 28px 28px;
+    text-align: center;
+  }
+
+  .result-message-eyebrow {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--gold);
+    opacity: 0.7;
+    margin-bottom: 12px;
+  }
+
+  .result-message-text { font-size: 21px; color: var(--gold-light); font-style: italic; line-height: 1.65; }
+
+  .reset-btn {
+    display: block;
+    width: calc(100% - 56px);
+    margin: 0 28px 28px;
+    padding: 13px;
+    background: transparent;
+    border: 1px solid rgba(201,169,110,0.2);
+    border-radius: 11px;
+    color: var(--text-muted);
+    font-family: 'Crimson Pro', serif;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.25s;
+  }
+
+  .reset-btn:hover { border-color: rgba(201,169,110,0.5); color: var(--gold); }
+
+  .features {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-top: 52px;
+  }
+
+  .feature-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 16px;
+    text-align: center;
+  }
+
+  .feature-icon { font-size: 26px; margin-bottom: 10px; display: block; }
+  .feature-title { font-family: 'Cinzel Decorative', serif; font-size: 11px; color: var(--gold); letter-spacing: 0.08em; margin-bottom: 6px; }
+  .feature-desc { font-size: 13px; color: var(--text-muted); font-style: italic; line-height: 1.5; }
+
+  .service-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+
+  .service-tab {
+    border: 1px solid var(--border);
+    background: rgba(15,12,30,0.7);
+    color: var(--text-muted);
+    border-radius: 999px;
+    padding: 10px 14px;
+    cursor: pointer;
+    font-family: 'Crimson Pro', serif;
+    font-size: 15px;
+    font-style: italic;
+    transition: all 0.25s;
+  }
+
+  .service-tab:hover,
+  .service-tab.active {
+    color: var(--gold);
+    border-color: var(--border-hover);
+    background: rgba(201,169,110,0.06);
+  }
+
+  .reader-list {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-top: 22px;
+  }
+
+  .reader-card {
+    text-align: center;
+  }
+
+  .reader-specialty {
+    color: var(--gold-light);
+    font-size: 14px;
+    font-style: italic;
+    margin-bottom: 10px;
+  }
+
+  .reader-upload {
+    margin-top: 16px;
+  }
+
+  .reader-upload input {
+    display: none;
+  }
+
+  .reader-upload label {
+    display: block;
+    border: 1px dashed rgba(201,169,110,0.3);
+    border-radius: 12px;
+    padding: 12px;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.25s;
+    font-size: 14px;
+    font-style: italic;
+  }
+
+  .reader-upload label:hover {
+    color: var(--gold);
+    border-color: rgba(201,169,110,0.55);
+    background: rgba(201,169,110,0.05);
+  }
+
+  .auth-switch {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+
+  .auth-switch button {
+    flex: 1;
+  }
+
+  .support-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+
+  footer {
+    text-align: center;
+    margin-top: 56px;
+    padding-top: 28px;
+    border-top: 1px solid var(--border);
+    font-size: 13px;
+    color: var(--text-muted);
+    font-style: italic;
+  }
+
+  @media (max-width: 760px) {
+    .grid-2, .grid-3, .reader-list, .support-row { grid-template-columns: 1fr; }
+    .hero-title { font-size: 24px; }
+  }
+
+  @media (max-width: 500px) {
+    .page-wrap { padding: 0 20px 70px; }
+    .site-name { font-size: 24px; }
+    .features { grid-template-columns: 1fr; }
+    .dob-row { grid-template-columns: 1fr; }
+    .result-body { padding: 20px 18px 6px; }
+    .result-message-box { margin: 8px 18px 22px; }
+    .reset-btn { width: calc(100% - 36px); margin: 0 18px 22px; }
+  }
+</style>
+</head>
+
+<body>
+
+<canvas id="stars-canvas"></canvas>
+
+<div class="page-wrap">
+
+  <header>
+    <div class="logo-wrap">
+      <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="40" cy="58" rx="22" ry="8" fill="rgba(201,169,110,0.08)" stroke="rgba(201,169,110,0.35)" stroke-width="1.5"/>
+        <path d="M18 44 Q18 66 40 66 Q62 66 62 44" stroke="rgba(201,169,110,0.55)" stroke-width="2" fill="rgba(201,169,110,0.06)" stroke-linecap="round"/>
+        <path d="M62 48 Q72 48 72 56 Q72 64 62 62" stroke="rgba(201,169,110,0.45)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <path d="M28 50 Q32 42 40 48 Q48 54 52 46" stroke="#C9A96E" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+        <path d="M30 57 Q35 52 42 55 Q48 58 52 53" stroke="rgba(201,169,110,0.5)" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+        <path d="M32 36 Q34 28 32 20" stroke="rgba(201,169,110,0.4)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <path d="M40 34 Q42 25 40 16" stroke="rgba(201,169,110,0.5)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <path d="M48 36 Q46 28 48 20" stroke="rgba(201,169,110,0.4)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <circle cx="14" cy="20" r="1.5" fill="rgba(201,169,110,0.5)"/>
+        <circle cx="66" cy="14" r="1"   fill="rgba(201,169,110,0.4)"/>
+        <circle cx="70" cy="30" r="1.5" fill="rgba(201,169,110,0.3)"/>
+        <circle cx="10" cy="40" r="1"   fill="rgba(201,169,110,0.35)"/>
+      </svg>
+    </div>
+
+    <div class="site-name">Faloria</div>
+    <div class="site-tagline">Where symbols become stories, and stories become guidance</div>
+
+    <nav class="nav">
+      <a href="#home" class="active" data-section="home">Home</a>
+      <a href="#login" data-section="login">Login</a>
+      <a href="#readings" data-section="readings">Readings</a>
+      <a href="#coffee" data-section="coffee">Coffee Cup</a>
+      <a href="#support" data-section="support">Contact</a>
+    </nav>
+  </header>
+
+  <!-- HOME -->
+  <section class="section active" id="home">
+    <div class="hero-card">
+      <div class="hero-eyebrow">Welcome to Faloria</div>
+      <h1 class="hero-title">A mystical reading platform for coffee, cards, palms, dreams and stars.</h1>
+      <p class="hero-text">
+        Faloria is a digital divination experience designed for people who seek symbolic, emotional and intuitive guidance.
+        Choose a reading type, select your fortune teller, upload your photo or enter your birth details, and let the symbols reveal their quiet language.
+      </p>
+      <div class="hero-actions">
+        <button class="mini-btn" onclick="openSection('readings')">Explore Readings</button>
+        <button class="mini-btn" onclick="openSection('login')">Create an Account</button>
+        <button class="mini-btn" onclick="openSection('coffee')">Try Coffee Reading</button>
+      </div>
+    </div>
+
+    <div class="divider"><span>What Makes Faloria Different</span></div>
+
+    <div class="grid grid-3">
+      <div class="info-card">
+        <span class="info-icon">🔮</span>
+        <div class="info-title">Personal Guidance</div>
+        <p class="info-text">
+          Every reading is shaped around your question, mood and chosen category.
+        </p>
+      </div>
+      <div class="info-card">
+        <span class="info-icon">🌙</span>
+        <div class="info-title">Multiple Arts</div>
+        <p class="info-text">
+          Tarot, Katina, palm reading, astrology, numerology, dream interpretation and coffee fortune.
+        </p>
+      </div>
+      <div class="info-card">
+        <span class="info-icon">✨</span>
+        <div class="info-title">Mystic Experience</div>
+        <p class="info-text">
+          A dark, elegant and celestial interface built for a calm spiritual atmosphere.
+        </p>
+      </div>
+    </div>
+
+    <div class="ornament">✦ ✦ ✦</div>
+
+    <div class="features">
+      <div class="feature-card">
+        <span class="feature-icon">🤖</span>
+        <div class="feature-title">AI Assisted</div>
+        <div class="feature-desc">Symbols are interpreted with a soft, poetic and intuitive language</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🧿</span>
+        <div class="feature-title">Reader Choice</div>
+        <div class="feature-desc">Pick the fortune teller whose style matches your energy</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🔒</span>
+        <div class="feature-title">Privacy First</div>
+        <div class="feature-desc">Your photos are used only for your selected reading experience</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LOGIN -->
+  <section class="section" id="login">
+    <div class="divider"><span>Member Portal</span></div>
+
+    <div class="auth-card">
+      <div class="auth-switch">
+        <button class="mini-btn" onclick="showAuth('loginForm')">Login</button>
+        <button class="mini-btn" onclick="showAuth('registerForm')">Register</button>
+      </div>
+
+      <div id="loginForm">
+        <div class="field">
+          <label for="loginEmail">Email address</label>
+          <input id="loginEmail" type="email" placeholder="yourname@example.com" />
+        </div>
+        <div class="field">
+          <label for="loginPassword">Password</label>
+          <input id="loginPassword" type="password" placeholder="Enter your password" />
+        </div>
+        <button class="cta-btn" onclick="demoLogin()">Enter Faloria</button>
+      </div>
+
+      <div id="registerForm" style="display:none">
+        <div class="field">
+          <label for="registerName">Your name</label>
+          <input id="registerName" type="text" placeholder="Enter your name" />
+        </div>
+        <div class="field">
+          <label for="registerEmail">Email address</label>
+          <input id="registerEmail" type="email" placeholder="yourname@example.com" />
+        </div>
+        <div class="field">
+          <label for="registerPassword">Create password</label>
+          <input id="registerPassword" type="password" placeholder="Create a secure password" />
+        </div>
+        <button class="cta-btn" onclick="demoRegister()">Create My Account</button>
+      </div>
+
+      <div class="success-msg" id="authMsg"></div>
+    </div>
+  </section>
+
+  <!-- READINGS -->
+  <section class="section" id="readings">
+    <div class="divider"><span>Mystic Reading Rooms</span></div>
+
+    <div class="service-tabs">
+      <button class="service-tab active" onclick="showService('coffeeService', this)">Coffee Fortune</button>
+      <button class="service-tab" onclick="showService('katinaService', this)">Katina</button>
+      <button class="service-tab" onclick="showService('palmService', this)">Palm Reading</button>
+      <button class="service-tab" onclick="showService('numerologyService', this)">Numerology</button>
+      <button class="service-tab" onclick="showService('tarotService', this)">Tarot</button>
+      <button class="service-tab" onclick="showService('dreamService', this)">Dreams</button>
+      <button class="service-tab" onclick="showService('astroService', this)">Astrology</button>
+    </div>
+
+    <div class="service-panel" id="coffeeService">
+      <div class="service-title">Coffee Fortune Reading</div>
+      <p class="service-text">
+        Coffee cup reading explores the shapes, marks and symbolic traces left inside the cup. It focuses on emotional atmosphere, relationships, decisions and future possibilities.
+      </p>
+      <div class="reader-list">
+        <div class="reader-card">
+          <span class="reader-avatar">☕</span>
+          <div class="reader-name">Selene</div>
+          <div class="reader-specialty">Soft & emotional readings</div>
+          <p class="reader-bio">Ideal for love, uncertainty and personal questions.</p>
+          <div class="reader-upload">
+            <input type="file" id="coffee1" accept="image/*" onchange="readerUpload(this, 'Selene')" />
+            <label for="coffee1">Upload cup photo</label>
+          </div>
+        </div>
+        <div class="reader-card">
+          <span class="reader-avatar">🌘</span>
+          <div class="reader-name">Mira</div>
+          <div class="reader-specialty">Detailed symbol reading</div>
+          <p class="reader-bio">Reads hidden patterns, paths and repeating signs.</p>
+          <div class="reader-upload">
+            <input type="file" id="coffee2" accept="image/*" onchange="readerUpload(this, 'Mira')" />
+            <label for="coffee2">Upload cup photo</label>
+          </div>
+        </div>
+        <div class="reader-card">
+          <span class="reader-avatar">🔮</span>
+          <div class="reader-name">Orion</div>
+          <div class="reader-specialty">Future-focused guidance</div>
+          <p class="reader-bio">Best for career, timing and upcoming changes.</p>
+          <div class="reader-upload">
+            <input type="file" id="coffee3" accept="image/*" onchange="readerUpload(this, 'Orion')" />
+            <label for="coffee3">Upload cup photo</label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="service-panel" id="katinaService" style="display:none">
+      <div class="service-title">Katina Reading</div>
+      <p class="service-text">
+        Katina reading is a symbolic card-based method often used for love, emotional bonds, hidden intentions and relationship dynamics.
+      </p>
+      <div class="reader-list">
+        <div class="reader-card">
+          <span class="reader-avatar">💜</span>
+          <div class="reader-name">Astra</div>
+          <div class="reader-specialty">Love & connection</div>
+          <p class="reader-bio">For questions about feelings, distance and attachment.</p>
+          <div class="reader-upload">
+            <input type="file" id="katina1" accept="image/*" onchange="readerUpload(this, 'Astra')" />
+            <label for="katina1">Upload your spread photo</label>
+          </div>
+        </div>
+        <div class="reader-card">
+          <span class="reader-avatar">🕯️</span>
+          <div class="reader-name">Vela</div>
+          <div class="reader-specialty">Hidden intentions</div>
+          <p class="reader-bio">Reveals what is unspoken or emotionally unclear.</p>
+          <div class="reader-upload">
+            <input type="file" id="katina2" accept="image/*" onchange="readerUpload(this, 'Vela')" />
+            <label for="katina2">Upload your spread photo</label>
+          </div>
+        </div>
+        <div class="reader-card">
+          <span class="reader-avatar">🌹</span>
+          <div class="reader-name">Lyra</div>
+          <div class="reader-specialty">Romantic energy</div>
+          <p class="reader-bio">Gentle, poetic and relationship-centered readings.</p>
+          <div class="reader-upload">
+            <input type="file" id="katina3" accept="image/*" onchange="readerUpload(this, 'Lyra')" />
+            <label for="katina3">Upload your spread photo</label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="service-panel" id="palmService" style="display:none">
+      <div class="service-title">Palm Reading</div>
+      <p class="service-text">
+        Palm reading interprets lines, mounts and hand shape. It can offer insight into personality, emotional style, life direction and strengths.
+      </p>
+      <div class="reader-list">
+        <div class="reader-card">
+          <span class="reader-avatar">🤲</span>
+          <div class="reader-name">Noa</div>
+          <div class="reader-specialty">Life line reading</div>
+          <p class="reader-bio">Reads major lines and personal energy patterns.</p>
+          <div class="reader-upload">
+            <input type="file" id="palm1" accept="image/*" onchange="readerUpload(this, 'Noa')" />
+            <label for="palm1">Upload palm photo</label>
+          </div>
+        </div>
+        <div class="reader-card">
+          <span class="reader-avatar">🪬</span>
+          <div class="reader-name">Seren</div>
+          <div class="reader-specialty">Character analysis</div>
+          <p class="reader-bio">Best for personality, potential and inner strengths.</p>
+          <div class="reader-upload">
+            <input type="file" id="palm2" accept="image/*" onchange="readerUpload(this, 'Seren')" />
+            <label for="palm2">Upload palm photo</label>
+          </div>
+        </div>
+        <div class="reader-card">
+          <span class="reader-avatar">✨</span>
+          <div class="reader-name">Elara</div>
+          <div class="reader-specialty">Destiny lines</div>
+          <p class="reader-bio">Focuses on life path, choices and turning points.</p>
+          <div class="reader-upload">
+            <input type="file" id="palm3" accept="image/*" onchange="readerUpload(this, 'Elara')" />
+            <label for="palm3">Upload palm photo</label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="service-panel" id="numerologyService" style="display:none">
+      <div class="service-title">Numerology</div>
+      <p class="service-text">
+        Numerology studies the symbolic meaning of numbers in your birth date and name. It can reveal life path energy, personal cycles and inner tendencies.
+      </p>
+
+      <div class="grid grid-2" style="margin-top:22px">
+        <div class="field">
+          <label for="numName">Full name</label>
+          <input id="numName" type="text" placeholder="Enter your full name" />
+        </div>
+        <div class="field">
+          <label for="numBirth">Birth date</label>
+          <input id="numBirth" type="date" />
+        </div>
+      </div>
+
+      <button class="cta-btn" onclick="calculateNumerology()">Calculate My Number</button>
+      <div class="success-msg" id="numResult"></div>
+
+      <div class="reader-list">
+        <div class="reader-card">
+          <span class="reader-avatar">7</span>
+          <div class="reader-name">Nova</div>
+          <div class="reader-specialty">Life path number</div>
+          <p class="reader-bio">Deep and analytical numerology interpretation.</p>
+        </div>
+        <div class="reader-card">
+          <span class="reader-avatar">9</span>
+          <div class="reader-name">Iris</div>
+          <div class="reader-specialty">Personal year</div>
+          <p class="reader-bio">Explains the energy surrounding your current year.</p>
+        </div>
+        <div class="reader-card">
+          <span class="reader-avatar">11</span>
+          <div class="reader-name">Rhea</div>
+          <div class="reader-specialty">Master numbers</div>
+          <p class="reader-bio">Focuses on intuition, purpose and spiritual lessons.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="service-panel" id="tarotService" style="display:none">
+      <div class="service-title">Tarot Reading</div>
+      <p class="service-text">
+        Tarot uses archetypal cards to explore your question through emotional, spiritual and practical layers.
+      </p>
+      <div class="reader-list">
+        <div class="reader-card">
+          <span class="reader-avatar">🃏</span>
+          <div class="reader-name">Cassia</div>
+          <div class="reader-specialty">Three-card spread</div>
+          <p class="reader-bio">Past, present and future with clean guidance.</p>
+          <div class="reader-upload">
+            <input type="file" id="tarot1" accept="image/*" onchange="readerUpload(this, 'Cassia')" />
+            <label for="tarot1">Upload tarot spread</label>
+          </div>
+        </div>
+        <div class="reader-card">
+          <span class="reader-avatar">🌕</span>
+          <div class="reader-name">Luna</div>
+          <div class="reader-specialty">Shadow work</div>
+          <p class="reader-bio">For deeper emotional themes and hidden fears.</p>
+          <div class="reader-upload">
+            <input type="file" id="tarot2" accept="image/*" onchange="readerUpload(this, 'Luna')" />
+            <label for="tarot2">Upload tarot spread</label>
+          </div>
+        </div>
+        <div class="reader-card">
+          <span class="reader-avatar">⚜️</span>
+          <div class="reader-name">Elias</div>
+          <div class="reader-specialty">Decision reading</div>
+          <p class="reader-bio">Helps compare options and possible outcomes.</p>
+          <div class="reader-upload">
+            <input type="file" id="tarot3" accept="image/*" onchange="readerUpload(this, 'Elias')" />
+            <label for="tarot3">Upload tarot spread</label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="service-panel" id="dreamService" style="display:none">
+      <div class="service-title">Dream Interpretation</div>
+      <p class="service-text">
+        Dream interpretation explores symbols, emotions and repeated themes from your dreams. It helps translate subconscious images into meaningful reflections.
+      </p>
+
+      <div class="field" style="margin-top:22px">
+        <label for="dreamText">Tell us your dream</label>
+        <textarea id="dreamText" rows="4" placeholder="Describe your dream, the atmosphere, people, colors or symbols you remember..."></textarea>
+      </div>
+
+      <button class="cta-btn" onclick="interpretDream()">Interpret My Dream</button>
+      <div class="success-msg" id="dreamResult"></div>
+
+      <div class="reader-list">
+        <div class="reader-card">
+          <span class="reader-avatar">🌌</span>
+          <div class="reader-name">Neris</div>
+          <div class="reader-specialty">Symbolic dreams</div>
+          <p class="reader-bio">Focuses on repeated symbols and emotional messages.</p>
+        </div>
+        <div class="reader-card">
+          <span class="reader-avatar">🦋</span>
+          <div class="reader-name">Sora</div>
+          <div class="reader-specialty">Transformation dreams</div>
+          <p class="reader-bio">Best for dreams about change, endings and rebirth.</p>
+        </div>
+        <div class="reader-card">
+          <span class="reader-avatar">🌫️</span>
+          <div class="reader-name">Avel</div>
+          <div class="reader-specialty">Subconscious themes</div>
+          <p class="reader-bio">Reads dreams through mood, fear and desire.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="service-panel" id="astroService" style="display:none">
+      <div class="service-title">Astrology</div>
+      <p class="service-text">
+        Astrology uses your birth date, time and location to explore zodiac energy, personality patterns and the structure of your birth chart.
+      </p>
+
+      <div class="grid grid-2" style="margin-top:22px">
+        <div class="field">
+          <label for="astroDate">Birth date</label>
+          <input id="astroDate" type="date" />
+        </div>
+        <div class="field">
+          <label for="astroTime">Birth time</label>
+          <input id="astroTime" type="time" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="astroPlace">Birth place</label>
+        <input id="astroPlace" type="text" placeholder="City, Country" />
+      </div>
+
+      <button class="cta-btn" onclick="calculateAstrology()">Calculate Birth Chart</button>
+      <div class="success-msg" id="astroResult"></div>
+
+      <div class="reader-list">
+        <div class="reader-card">
+          <span class="reader-avatar">♈</span>
+          <div class="reader-name">Aria</div>
+          <div class="reader-specialty">Zodiac readings</div>
+          <p class="reader-bio">Sun sign, moon sign and emotional patterns.</p>
+        </div>
+        <div class="reader-card">
+          <span class="reader-avatar">🪐</span>
+          <div class="reader-name">Cyrus</div>
+          <div class="reader-specialty">Birth chart</div>
+          <p class="reader-bio">Detailed chart structure and planetary themes.</p>
+        </div>
+        <div class="reader-card">
+          <span class="reader-avatar">🌠</span>
+          <div class="reader-name">Vesper</div>
+          <div class="reader-specialty">Daily horoscope</div>
+          <p class="reader-bio">Short daily guidance based on zodiac energy.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="success-msg" id="readerMsg"></div>
+  </section>
+
+  <!-- COFFEE CUP READING -->
+  <section class="section" id="coffee">
+    <div id="formSection">
+      <div class="divider"><span>Read The Cup</span></div>
+
+      <div class="upload-zone" id="uploadZone">
+        <svg class="upload-icon-svg" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="28" cy="34" r="16" stroke="rgba(201,169,110,0.6)" stroke-width="1.5" fill="rgba(201,169,110,0.06)"/>
+          <ellipse cx="28" cy="43" rx="12" ry="4.5" stroke="rgba(201,169,110,0.35)" stroke-width="1" fill="none"/>
+          <path d="M21 32 Q24 25 28 30 Q32 35 35 28" stroke="#C9A96E" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+          <path d="M23 38 Q26 34 30 37 Q33 40 35 36" stroke="rgba(201,169,110,0.5)" stroke-width="1" fill="none" stroke-linecap="round"/>
+          <path d="M28 16 L28 8 M24 12 L28 8 L32 12" stroke="rgba(201,169,110,0.5)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <div class="upload-main-text">Upload your coffee cup photo</div>
+        <div class="upload-sub-text">Click or drag & drop · The inside of the cup should be visible</div>
+        <input type="file" id="fileInput" accept="image/*" />
+        <img id="previewImg" alt="Coffee cup preview" />
+      </div>
+
+      <div class="ornament">✦ ✦ ✦</div>
+
+      <div class="field">
+        <label for="questionInput">Your question or the topic on your mind <em style="opacity:0.6">(optional)</em></label>
+        <textarea id="questionInput" rows="3" placeholder="Example: What is coming in my love life? / Should I change my career path?"></textarea>
+      </div>
+
+      <div class="field">
+        <label>Birth date <em style="opacity:0.6">(optional — for zodiac energy)</em></label>
+        <div class="dob-row">
+          <input type="number" id="dobDay" placeholder="Day  (1–31)" min="1" max="31" />
+          <input type="number" id="dobMonth" placeholder="Month  (1–12)" min="1" max="12" />
+        </div>
+      </div>
+
+      <button class="cta-btn" id="readBtn">✨ Read My Fortune</button>
+      <div class="error-msg" id="errorMsg"></div>
+    </div>
+
+    <div id="loadingState">
+      <div class="loading-cup">
+        <svg viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="36" cy="52" rx="18" ry="7" fill="rgba(201,169,110,0.08)" stroke="rgba(201,169,110,0.35)" stroke-width="1.5"/>
+          <path d="M18 38 Q18 60 36 60 Q54 60 54 38" stroke="rgba(201,169,110,0.6)" stroke-width="2" fill="rgba(201,169,110,0.06)"/>
+          <path d="M54 42 Q64 42 64 50 Q64 58 54 56" stroke="rgba(201,169,110,0.45)" stroke-width="1.5" fill="none"/>
+          <path d="M26 44 Q30 36 36 42 Q42 48 46 40" stroke="#C9A96E" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+          <path d="M30 12 Q32 5 30 0" stroke="rgba(201,169,110,0.5)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+          <path d="M36 10 Q38 3 36 0"  stroke="rgba(201,169,110,0.6)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+          <path d="M42 12 Q40 5 42 0"  stroke="rgba(201,169,110,0.5)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="loading-label">Your cup is being read<span class="loading-dots"></span></div>
+      <div class="loading-hint">The symbols are slowly revealing their secrets…</div>
+    </div>
+
+    <div id="resultCard">
+      <div class="result-header">
+        <div class="result-orb">🔮</div>
+        <div>
+          <div class="result-meta-title">Your Reading Is Ready</div>
+          <div class="result-meta-date" id="resultDate"></div>
+        </div>
+      </div>
+      <div class="result-body" id="resultBody"></div>
+      <div class="result-message-box" id="resultMessageBox" style="display:none">
+        <div class="result-message-eyebrow">✦ A Message From The Cup ✦</div>
+        <div class="result-message-text" id="resultMessageText"></div>
+      </div>
+      <button class="reset-btn" id="resetBtn">↩ Start A New Reading</button>
+    </div>
+  </section>
+
+  <!-- SUPPORT -->
+  <section class="section" id="support">
+    <div class="divider"><span>Contact & Support</span></div>
+
+    <div class="support-row">
+      <div class="support-card">
+        <div class="service-title">Need help?</div>
+        <p class="support-text">
+          If you have a problem with your reading, account, photo upload or payment process, you can contact Faloria Support.
+        </p>
+        <div class="ornament">✦</div>
+        <p class="support-text">
+          Email: support@faloria.com<br />
+          Response time: 24–48 hours<br />
+          Support language: English
+        </p>
+      </div>
+
+      <div class="support-card">
+        <div class="field">
+          <label for="supportName">Name</label>
+          <input id="supportName" type="text" placeholder="Your name" />
+        </div>
+        <div class="field">
+          <label for="supportEmail">Email</label>
+          <input id="supportEmail" type="email" placeholder="yourname@example.com" />
+        </div>
+        <div class="field">
+          <label for="supportMessage">Message</label>
+          <textarea id="supportMessage" rows="4" placeholder="How can we help you?"></textarea>
+        </div>
+        <button class="cta-btn" onclick="sendSupport()">Send Message</button>
+        <div class="success-msg" id="supportMsg"></div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    Faloria &copy; 2026 · Let the stars guide what the heart already knows ✦
+  </footer>
+</div>
+
+<script>
+/* STARS */
+(function() {
+  const canvas = document.getElementById('stars-canvas');
+  const ctx = canvas.getContext('2d');
+  let stars = [], W, H, t = 0;
+
+  function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+
+  function initStars() {
+    stars = [];
+    for (let i = 0; i < 120; i++) {
+      stars.push({
+        x: Math.random() * W,
+        y: Math.random() * H,
+        r: Math.random() * 1.4 + 0.3,
+        phase: Math.random() * Math.PI * 2,
+        speed: 0.4 + Math.random() * 0.8,
+        maxAlpha: 0.2 + Math.random() * 0.6
+      });
+    }
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    t += 0.012;
+    stars.forEach(s => {
+      const alpha = s.maxAlpha * (0.5 + 0.5 * Math.sin(t * s.speed + s.phase));
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(232,201,138,${alpha})`;
+      ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+
+  window.addEventListener('resize', () => {
+    resize();
+    initStars();
+  });
+
+  resize();
+  initStars();
+  draw();
+})();
+
+/* SECTION NAVIGATION */
+const navLinks = document.querySelectorAll('.nav a');
+const sections = document.querySelectorAll('.section');
+
+function openSection(id) {
+  sections.forEach(section => section.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+
+  navLinks.forEach(link => {
+    link.classList.toggle('active', link.dataset.section === id);
+  });
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+navLinks.forEach(link => {
+  link.addEventListener('click', e => {
+    e.preventDefault();
+    openSection(link.dataset.section);
+  });
+});
+
+/* LOGIN / REGISTER DEMO */
+function showAuth(formId) {
+  document.getElementById('loginForm').style.display = formId === 'loginForm' ? 'block' : 'none';
+  document.getElementById('registerForm').style.display = formId === 'registerForm' ? 'block' : 'none';
+  document.getElementById('authMsg').classList.remove('visible');
+}
+
+function demoLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value.trim();
+  const msg = document.getElementById('authMsg');
+
+  if (!email || !password) {
+    msg.textContent = 'Please enter your email and password.';
+  } else {
+    msg.textContent = 'Welcome back to Faloria. Your mystical room is ready.';
+  }
+
+  msg.classList.add('visible');
+}
+
+function demoRegister() {
+  const name = document.getElementById('registerName').value.trim();
+  const email = document.getElementById('registerEmail').value.trim();
+  const password = document.getElementById('registerPassword').value.trim();
+  const msg = document.getElementById('authMsg');
+
+  if (!name || !email || !password) {
+    msg.textContent = 'Please fill in all registration fields.';
+  } else {
+    msg.textContent = `Your Faloria account has been created, ${name}.`;
+  }
+
+  msg.classList.add('visible');
+}
+
+/* READING SERVICES */
+function showService(serviceId, button) {
+  const panels = document.querySelectorAll('.service-panel');
+  const tabs = document.querySelectorAll('.service-tab');
+
+  panels.forEach(panel => panel.style.display = 'none');
+  document.getElementById(serviceId).style.display = 'block';
+
+  tabs.forEach(tab => tab.classList.remove('active'));
+  button.classList.add('active');
+
+  document.getElementById('readerMsg').classList.remove('visible');
+}
+
+function readerUpload(input, readerName) {
+  const msg = document.getElementById('readerMsg');
+
+  if (input.files && input.files[0]) {
+    msg.textContent = `Your photo has been selected for ${readerName}. In a real system, this would be sent to the chosen reader.`;
+    msg.classList.add('visible');
+  }
+}
+
+/* NUMEROLOGY DEMO */
+function calculateNumerology() {
+  const name = document.getElementById('numName').value.trim();
+  const birth = document.getElementById('numBirth').value;
+  const msg = document.getElementById('numResult');
+
+  if (!name || !birth) {
+    msg.textContent = 'Please enter your full name and birth date.';
+    msg.classList.add('visible');
+    return;
+  }
+
+  const digits = birth.replace(/\D/g, '').split('').map(Number);
+  let total = digits.reduce((a, b) => a + b, 0);
+
+  while (total > 9 && total !== 11 && total !== 22 && total !== 33) {
+    total = String(total).split('').map(Number).reduce((a, b) => a + b, 0);
+  }
+
+  msg.textContent = `${name}, your life path energy is ${total}. This number reflects your inner rhythm, personal lessons and the way you move through life.`;
+  msg.classList.add('visible');
+}
+
+/* DREAM DEMO */
+function interpretDream() {
+  const dream = document.getElementById('dreamText').value.trim();
+  const msg = document.getElementById('dreamResult');
+
+  if (!dream) {
+    msg.textContent = 'Please describe your dream first.';
+  } else {
+    msg.textContent = 'Your dream carries symbolic emotional energy. Repeated images, colors and people may point to something your inner world is trying to process.';
+  }
+
+  msg.classList.add('visible');
+}
+
+/* ASTROLOGY DEMO */
+function calculateAstrology() {
+  const date = document.getElementById('astroDate').value;
+  const time = document.getElementById('astroTime').value;
+  const place = document.getElementById('astroPlace').value.trim();
+  const msg = document.getElementById('astroResult');
+
+  if (!date || !time || !place) {
+    msg.textContent = 'Please enter your birth date, birth time and birth place.';
+  } else {
+    msg.textContent = 'Your birth chart request is ready. In a real astrology system, this data would calculate your sun, moon, rising sign and planetary placements.';
+  }
+
+  msg.classList.add('visible');
+}
+
+/* SUPPORT DEMO */
+function sendSupport() {
+  const name = document.getElementById('supportName').value.trim();
+  const email = document.getElementById('supportEmail').value.trim();
+  const message = document.getElementById('supportMessage').value.trim();
+  const msg = document.getElementById('supportMsg');
+
+  if (!name || !email || !message) {
+    msg.textContent = 'Please fill in your name, email and message.';
+  } else {
+    msg.textContent = 'Your message has been received. Faloria Support will contact you soon.';
+  }
+
+  msg.classList.add('visible');
+}
+
+/* UPLOAD */
+const uploadZone   = document.getElementById('uploadZone');
+const fileInput    = document.getElementById('fileInput');
+const previewImg   = document.getElementById('previewImg');
+const readBtn      = document.getElementById('readBtn');
+const formSection  = document.getElementById('formSection');
+const loadingState = document.getElementById('loadingState');
+const resultCard   = document.getElementById('resultCard');
+const resultBody   = document.getElementById('resultBody');
+const resultDate   = document.getElementById('resultDate');
+const resultMsgBox = document.getElementById('resultMessageBox');
+const resultMsgTxt = document.getElementById('resultMessageText');
+const errorMsg     = document.getElementById('errorMsg');
+const resetBtn     = document.getElementById('resetBtn');
+
+let imageBase64 = null;
+let imageMime   = 'image/jpeg';
+
+uploadZone.addEventListener('click', () => fileInput.click());
+
+fileInput.addEventListener('change', e => {
+  if (e.target.files[0]) loadPreview(e.target.files[0]);
+});
+
+uploadZone.addEventListener('dragover', e => {
+  e.preventDefault();
+  uploadZone.classList.add('dragover');
+});
+
+uploadZone.addEventListener('dragleave', () => {
+  uploadZone.classList.remove('dragover');
+});
+
+uploadZone.addEventListener('drop', e => {
+  e.preventDefault();
+  uploadZone.classList.remove('dragover');
+
+  const f = e.dataTransfer.files[0];
+
+  if (f && f.type.startsWith('image/')) {
+    loadPreview(f);
+  }
+});
+
+function loadPreview(file) {
+  imageMime = file.type || 'image/jpeg';
+  const reader = new FileReader();
+
+  reader.onload = ev => {
+    imageBase64 = ev.target.result.split(',')[1];
+    previewImg.src = ev.target.result;
+    previewImg.style.display = 'block';
+
+    uploadZone.querySelector('.upload-icon-svg').style.display = 'none';
+    uploadZone.querySelector('.upload-main-text').style.display = 'none';
+    uploadZone.querySelector('.upload-sub-text').style.display  = 'none';
+    uploadZone.classList.add('has-image');
+  };
+
+  reader.readAsDataURL(file);
+}
+
+/* ZODIAC */
+function getZodiac(day, month) {
+  const list = [
+    [20,1,'Aquarius'],[19,2,'Pisces'],[20,3,'Aries'],[20,4,'Taurus'],
+    [21,5,'Gemini'],[21,6,'Cancer'],[22,7,'Leo'],[22,8,'Virgo'],
+    [23,9,'Libra'],[22,10,'Scorpio'],[21,11,'Sagittarius'],[21,12,'Capricorn'],[31,12,'Aquarius']
+  ];
+
+  for (const [limit, m, z] of list) {
+    if (month < m || (month === m && day <= limit)) return z;
+  }
+
+  return 'Aquarius';
+}
+
+/* COFFEE READING */
+readBtn.addEventListener('click', async () => {
+  errorMsg.classList.remove('visible');
+
+  if (!imageBase64) {
+    showError('Please upload a coffee cup photo first.');
+    return;
+  }
+
+  const question = document.getElementById('questionInput').value.trim();
+  const day      = parseInt(document.getElementById('dobDay').value)   || 0;
+  const month    = parseInt(document.getElementById('dobMonth').value) || 0;
+
+  const zodiacInfo = (day && month) ? `User zodiac sign: ${getZodiac(day, month)}.` : '';
+  const questionInfo = question ? `User question: "${question}"` : 'The user has no specific question; give a general reading.';
+
+  const systemPrompt = `You are the experienced and intuitive coffee fortune teller of the Faloria app.
+You speak in a mystical, warm and poetic English tone. Never say "I am an AI".
+Speak as if you are truly reading the shapes inside the user's coffee cup.
+
+Only respond in the following JSON format, with no markdown and no extra text:
+{
+  "general": "Overall energy and atmosphere of the cup in 2-3 sentences",
+  "past": "A symbolic reading about the past in 2 sentences",
+  "present": "Current situation and emotional energy in 2 sentences",
+  "future": "Upcoming possibilities, hope and gentle warnings in 2-3 sentences",
+  "answer": "A specific answer to the user's question in 2 sentences; if there is no question, return an empty string",
+  "message": "One poetic sentence as a private message from the cup"
+}`;
+
+  formSection.style.display = 'none';
+  loadingState.classList.add('visible');
+  readBtn.disabled = true;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: systemPrompt,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image', source: { type: 'base64', media_type: imageMime, data: imageBase64 } },
+            { type: 'text', text: `${questionInfo} ${zodiacInfo} Read this coffee cup.` }
+          ]
+        }]
+      })
+    });
+
+    const data = await resp.json();
+
+    if (!resp.ok) throw new Error(data.error?.message || 'API error');
+
+    const raw = data.content.map(b => b.text || '').join('');
+    const cleaned = raw.replace(/```json|```/g, '').trim();
+    const result = JSON.parse(cleaned);
+
+    loadingState.classList.remove('visible');
+    showResult(result, question);
+
+  } catch (err) {
+    console.error(err);
+
+    loadingState.classList.remove('visible');
+
+    const demoResult = {
+      general: "The cup carries a quiet but powerful energy. There are scattered signs around the edges, suggesting that your mind has been moving between many possibilities at once.",
+      past: "A closed shape near the lower side points to something you kept inside for a long time. It feels like a memory that still influences how you trust new beginnings.",
+      present: "The center of the cup feels crowded, which shows emotional pressure and unfinished decisions. Still, one clear path seems to open slowly from the middle toward the rim.",
+      future: "A small rising mark suggests a message, invitation or opportunity coming sooner than expected. The cup advises patience, because what feels delayed is actually forming in a more stable way.",
+      answer: question ? "Your question does not seem fully closed yet; the energy around it is still changing. The cup says the answer will become clearer when you stop forcing certainty and watch actions more than words." : "",
+      message: "What is meant for you will not need to be chased through the dark."
+    };
+
+    showResult(demoResult, question);
+  }
+});
+
+function showError(msg) {
+  errorMsg.textContent = msg;
+  errorMsg.classList.add('visible');
+}
+
+/* RESULT */
+function showResult(r, question) {
+  resultDate.textContent = new Date().toLocaleDateString('en-US', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  });
+
+  const sections = [
+    { label: '✨ General Energy', text: r.general },
+    { label: '🌙 The Past', text: r.past },
+    { label: '⭐ The Present', text: r.present },
+    { label: '🔮 The Future', text: r.future }
+  ];
+
+  if (question && r.answer) {
+    sections.push({ label: '💫 Answer To Your Question', text: r.answer });
+  }
+
+  let html = '';
+
+  sections.forEach((s, i) => {
+    if (!s.text) return;
+
+    html += `<div class="result-section">
+      <div class="result-section-label">${s.label}</div>
+      <div class="result-section-text">${s.text}</div>
+    </div>`;
+
+    if (i < sections.length - 1) {
+      html += '<hr class="result-hr" />';
+    }
+  });
+
+  resultBody.innerHTML = html;
+
+  if (r.message) {
+    resultMsgTxt.textContent = `"${r.message}"`;
+    resultMsgBox.style.display = 'block';
+  } else {
+    resultMsgBox.style.display = 'none';
+  }
+
+  resultCard.classList.add('visible');
+}
+
+/* RESET */
+resetBtn.addEventListener('click', () => {
+  imageBase64 = null;
+
+  previewImg.style.display = 'none';
+  previewImg.src = '';
+
+  uploadZone.querySelector('.upload-icon-svg').style.display = '';
+  uploadZone.querySelector('.upload-main-text').style.display = '';
+  uploadZone.querySelector('.upload-sub-text').style.display  = '';
+
+  uploadZone.classList.remove('has-image', 'dragover');
+
+  fileInput.value = '';
+  document.getElementById('questionInput').value = '';
+  document.getElementById('dobDay').value = '';
+  document.getElementById('dobMonth').value = '';
+
+  resultCard.classList.remove('visible');
+  resultBody.innerHTML = '';
+  resultMsgBox.style.display = 'none';
+  errorMsg.classList.remove('visible');
+
+  readBtn.disabled = false;
+  formSection.style.display = 'block';
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+</script>
+
+</body>
+</html>
